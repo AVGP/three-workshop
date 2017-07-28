@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<body>
+  <canvas width="500" height="500"></canvas>
+    <script type="text/plain" id="vs">
+attribute vec4 aVertexPosition;
+
+attribute vec2 aUv;
+varying vec2 vUv;
+
+void main(void) {
+  gl_Position = aVertexPosition;
+  vUv = aUv;
+}
+    </script>
+    <script type="text/plain" id="fs">
+precision highp float;
+
+varying vec2 vUv;
+uniform sampler2D uSampler;
+
+void main(void) {
+  gl_FragColor = texture2D(uSampler, vec2(vUv.x, vUv.y));
+}
+    </script>
+
+  <script>
+var gl = document.querySelector('canvas').getContext('webgl')
+
+gl.viewport(0, 0, 500, 500)
+gl.clearColor(0.0, 0.0, 0.0, 1.0)
+gl.clear(gl.COLOR_BUFFER_BIT)
+
+var vertices = [
+  -0.5, -0.5,
+   0.5, -0.5,
+     0,  0.5
+]
+
+var texCoordinates = [
+  0.0, 1,
+  1.0, 1,
+  0.5, 0
+]
+
+var vertexBuf = gl.createBuffer()
+gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuf)
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+
+var texCoordBuffer = gl.createBuffer()
+gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoordinates), gl.STATIC_DRAW);
+
+var texture = gl.createTexture()
+
+var program = gl.createProgram()
+var vs = gl.createShader(gl.VERTEX_SHADER)
+var fs = gl.createShader(gl.FRAGMENT_SHADER)
+
+gl.shaderSource(vs, document.getElementById('vs').textContent)
+gl.shaderSource(fs, document.getElementById('fs').textContent)
+
+gl.compileShader(vs)
+console.log('Vertex shader compilation:', gl.getShaderInfoLog(vs))
+
+gl.compileShader(fs)
+console.log('Fragment shader compilation:', gl.getShaderInfoLog(fs))
+
+gl.attachShader(program, vs)
+gl.attachShader(program, fs)
+
+gl.linkProgram(program)
+if(!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+  alert('Linking has failed.' +  gl.getProgramInfoLog(program))
+}
+gl.useProgram(program)
+
+gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuf)
+var vertexPosAttrib = gl.getAttribLocation(program, 'aVertexPosition')
+gl.enableVertexAttribArray(vertexPosAttrib)
+gl.vertexAttribPointer(vertexPosAttrib, 2, gl.FLOAT, false, 0, 0)
+
+gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+program.textureCoordAttribute = gl.getAttribLocation(program, "aUv");
+gl.enableVertexAttribArray(program.textureCoordAttribute);
+gl.vertexAttribPointer(program.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+
+loadTexture('../zurich.jpg')
+
+function render() {
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuf)
+  gl.drawArrays(gl.TRIANGLES, 0, 3)
+  requestAnimationFrame(render)
+}
+
+function loadTexture(imgName) {
+    var img = new Image()
+    img.onload = function() {
+
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+      gl.generateMipmap(gl.TEXTURE_2D);
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.uniform1i(gl.getUniformLocation(program, "uSampler"), 0);
+
+      requestAnimationFrame(render)
+    }
+    img.src = imgName
+  }
+
+  </script>
+</body>
+</html>

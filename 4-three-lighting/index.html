@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<body>
+  <script src="../three.min.js"></script>
+  <script>
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+var material1 = new THREE.MeshBasicMaterial( {  } );
+var material2 = new THREE.MeshLambertMaterial( {  } );
+var material3 = new THREE.MeshPhongMaterial( { shininess: 300, reflectivity: 1 } );
+
+var cube1 = new THREE.Mesh( geometry, material1 );
+scene.add( cube1 );
+
+var cube2 = new THREE.Mesh( geometry, material2 );
+scene.add( cube2 );
+
+var cube3 = new THREE.Mesh( geometry, material3 );
+scene.add( cube3 );
+
+cube1.position.x = -2
+cube3.position.x =  2
+
+camera.position.z = 5;
+
+var light1 = new THREE.PointLight( 0xff0000 )
+var light2 = new THREE.PointLight( 0x0000ff )
+
+scene.add( light1 )
+scene.add( light2 )
+
+light1.position.set( -4, 0, 2 )
+light2.position.set(  4, 0, 2 )
+
+function render() {
+  cube1.rotation.y += Math.PI / 200;
+  cube2.rotation.y += Math.PI / 200;
+  cube3.rotation.y += Math.PI / 200;
+	requestAnimationFrame( render );
+	renderer.render( scene, camera );
+}
+render();
+  </script>
+</body>
+</html>

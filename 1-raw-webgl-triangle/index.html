@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<body>
+  <canvas width="500" height="500"></canvas>
+    <script type="text/plain" id="vs">
+attribute vec4 aVertexPosition;
+
+void main(void) {
+  gl_Position = aVertexPosition;
+}
+    </script>
+    <script type="text/plain" id="fs">
+precision highp float;
+
+void main(void) {
+  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+    </script>
+
+  <script>
+var gl = document.querySelector('canvas').getContext('webgl')
+
+gl.viewport(0, 0, 500, 500)
+gl.clearColor(0.0, 0.0, 0.0, 1.0)
+gl.clear(gl.COLOR_BUFFER_BIT)
+
+var vertices = [
+  -0.5, -0.5,
+   0.5, -0.5,
+     0,  0.5
+]
+
+var vertexBuf = gl.createBuffer()
+gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuf)
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+
+var program = gl.createProgram()
+var vs = gl.createShader(gl.VERTEX_SHADER)
+var fs = gl.createShader(gl.FRAGMENT_SHADER)
+
+gl.shaderSource(vs, document.getElementById('vs').textContent)
+gl.shaderSource(fs, document.getElementById('fs').textContent)
+
+gl.compileShader(vs)
+console.log('Vertex shader compilation:', gl.getShaderInfoLog(vs))
+
+gl.compileShader(fs)
+console.log('Fragment shader compilation:', gl.getShaderInfoLog(fs))
+
+gl.attachShader(program, vs)
+gl.attachShader(program, fs)
+
+gl.linkProgram(program)
+if(!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+  alert('Linking has failed.' +  gl.getProgramInfoLog(program))
+}
+gl.useProgram(program)
+
+var vertexPosAttrib = gl.getAttribLocation(program, 'aVertexPosition')
+gl.enableVertexAttribArray(vertexPosAttrib)
+gl.vertexAttribPointer(vertexPosAttrib, 2, gl.FLOAT, false, 0, 0)
+
+requestAnimationFrame(function render() {
+  gl.drawArrays(gl.TRIANGLES, 0, 3)
+  //requestAnimationFrame(render)
+})
+
+  </script>
+</body>
+</html>
